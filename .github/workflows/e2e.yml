@@ -1,0 +1,64 @@
+name: E2E
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * *"   # 매일 09:00 KST 정기 회귀
+
+permissions:
+  contents: write          # Allure 리포트를 gh-pages 에 배포하기 위함
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Install Playwright browsers
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: uv run pytest tests/ --alluredir=allure-results
+        continue-on-error: true   # 리포트는 실패해도 항상 생성·배포
+
+      - name: Get Allure history
+        if: always()
+        continue-on-error: true
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      - name: Setup Java (Allure CLI 용)
+        if: always()
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Generate Allure report (Docker 없이 CLI 직접)
+        if: always()
+        run: |
+          mkdir -p allure-results
+          # 이전 트렌드 히스토리 이어붙이기 (gh-pages 에 있으면)
+          if [ -d gh-pages/history ]; then cp -r gh-pages/history allure-results/history; fi
+          echo "== allure-results =="; ls -la allure-results
+          npm install -g allure-commandline --silent
+          allure generate allure-results --clean -o allure-history
+
+      - name: Deploy report to GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
