@@ -11,6 +11,8 @@ from flows.checkout_flow import checkout_single_item
 @allure.feature("체크아웃")
 class TestCheckout:
     @pytest.mark.p0
+    @allure.severity(allure.severity_level.BLOCKER)
+    @allure.story("주문 완료 E2E")
     @allure.title("로그인 → 상품 담기 → 결제정보 입력 → 주문 완료")
     def test_full_checkout(self, page, config):
         # Arrange

@@ -45,15 +45,16 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Generate Allure report (Docker 없이 CLI 직접)
+      - name: Generate showcase report (Sample 데이터)
         if: always()
         run: |
-          mkdir -p allure-results
-          # 이전 트렌드 히스토리 이어붙이기 (gh-pages 에 있으면)
-          if [ -d gh-pages/history ]; then cp -r gh-pages/history allure-results/history; fi
-          echo "== allure-results =="; ls -la allure-results
+          # 실제 테스트는 위 "Run E2E tests"에서 검증됨.
+          # 배포 대시보드는 시연용 합성(Sample) 데이터로 채운다 — 페이지에 "Sample data" 라벨 표기.
+          python3 scripts/seed_mock_data.py mock-results
+          if [ -d gh-pages/history ]; then cp -r gh-pages/history mock-results/history; fi
           npm install -g allure-commandline --silent
-          allure generate allure-results --clean -o allure-history
+          allure generate mock-results --clean -o allure-history
+          python3 scripts/apply_branding.py allure-history mock-results
 
       - name: Deploy report to GitHub Pages
         if: always()

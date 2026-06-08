@@ -1,14 +1,24 @@
 """pytest 전역 설정 — 브라우저 fixture · 실패 시 스크린샷 → Allure 첨부.
 
 테스트 독립성: 매 테스트마다 새 browser context 로 상태를 격리한다.
+세션 종료 시 Allure 메타(environment·categories·executor)를 results 에 주입해
+기본 리포트를 '운영 대시보드'처럼 보강한다.
 """
 from __future__ import annotations
+
+import json
+import os
+import shutil
+from pathlib import Path
 
 import allure
 import pytest
 from playwright.sync_api import Page, sync_playwright
 
 from utils.config import load_config
+
+ALLURE_DIR = Path("allure-results")
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -57,3 +67,41 @@ def _attach_failure_screenshot(page: Page, test_name: str) -> None:
         )
     except Exception as error:
         print(f"[screenshot skip] {type(error).__name__}: {error}")
+
+
+def pytest_sessionfinish(session: pytest.Session, exitstatus: int) -> None:
+    """Allure 리포트 보강용 메타 파일을 allure-results 에 주입.
+
+    - environment.properties : 환경 위젯
+    - categories.json        : 커스텀 결함 분류 위젯
+    - executor.json          : CI 빌드 링크 (GitHub Actions 에서만)
+    """
+    if not ALLURE_DIR.exists():
+        return
+
+    (ALLURE_DIR / "environment.properties").write_text(
+        "Target=saucedemo.com\n"
+        "Browser=Chromium (Playwright)\n"
+        "Framework=pytest + Playwright\n"
+        "Architecture=POM 4-Layer (locators/pages/flows/tests)\n",
+        encoding="utf-8",
+    )
+
+    categories_src = BASE_DIR / "allure" / "categories.json"
+    if categories_src.exists():
+        shutil.copy(categories_src, ALLURE_DIR / "categories.json")
+
+    run_id = os.environ.get("GITHUB_RUN_ID")
+    executor = {
+        "name": "GitHub Actions" if run_id else "Local",
+        "type": "github" if run_id else "local",
+        "reportName": "QA E2E Automation Report",
+    }
+    if run_id:
+        server = os.environ.get("GITHUB_SERVER_URL", "https://github.com")
+        repo = os.environ.get("GITHUB_REPOSITORY", "")
+        executor["buildName"] = f"Run #{os.environ.get('GITHUB_RUN_NUMBER', '')}"
+        executor["buildUrl"] = f"{server}/{repo}/actions/runs/{run_id}"
+    (ALLURE_DIR / "executor.json").write_text(
+        json.dumps(executor, ensure_ascii=False), encoding="utf-8"
+    )
