@@ -2,7 +2,7 @@
 
 **Playwright · pytest · POM 4-Layer · Allure · GitHub Actions** 기반 웹 E2E 자동화 프레임워크.
 
-> 실서비스(OTT) 규모에서 운영하던 E2E 프레임워크의 **설계 원칙을 공개 데모 사이트([saucedemo.com](https://www.saucedemo.com))에 재현**한 포트폴리오 프로젝트입니다. 로그인 → 상품 → 장바구니 → 체크아웃 핵심 플로우를 다룹니다.
+> 실서비스(OTT) 규모에서 운영하던 E2E 프레임워크의 **공개 데모**  포트폴리오 프로젝트입니다. 로그인 → 상품 → 장바구니 → 체크아웃 핵심 플로우를 다룹니다.
 
 <br>
 
