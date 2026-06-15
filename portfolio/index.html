@@ -229,7 +229,7 @@
         <header>
           <div class="kicker">MATURITY</div>
           <h2>자동화 성숙도 로드맵</h2>
-          <p class="sub">Reality → Hybrid → Flow → Self-Heal, 다음은 다른 도메인으로</p>
+          <p class="sub">Reality → Hybrid → Flow → 자가격리, 다음은 다른 도메인으로</p>
         </header>
         <div class="desc">
           <table class="tbl">
@@ -238,7 +238,7 @@
               <tr><td>Phase 1 · Reality</td><td>진입점 안정화</td><td>Locator 분리, 디버깅 가능한 코드</td><td><span class="pill done">완료</span></td></tr>
               <tr><td>Phase 2 · Hybrid</td><td>사용자 여정 확장</td><td>비즈니스 로직 연속성(결제) 검증</td><td><span class="pill done">완료</span></td></tr>
               <tr><td>Phase 3 · Flow</td><td>전체 시스템 최적화</td><td>CI/CD 통합 · 일 3회 cron · Allure 트렌드</td><td><span class="pill done">완료</span></td></tr>
-              <tr><td>Phase 4 · Self-Heal</td><td>자가 진단·격리·치유</td><td>AI 진단 + 사람 교정·flaky 자가격리 → 자동 수정 PR</td><td><span class="pill wip">진행 중</span></td></tr>
+              <tr><td>Phase 4 · 자가격리</td><td>게이트 신뢰도 유지</td><td>flaky 자동 quarantine · AI 진단 + 사람 교정 · 진단 정확도 추적 <span style="color:var(--txt-dim)"></span></td><td><span class="pill done">완료</span></td></tr>
               <tr><td>Phase 5 · Expand</td><td>타 도메인 확장</td><td>앱(iOS·Android·TV) 자동화 · 웹 스토어 추가</td><td><span class="pill next">예정</span></td></tr>
             </tbody>
           </table>
@@ -458,29 +458,7 @@
       </div>
     </section>
 
-    <!-- 13. CASE STUDY -->
-    <section class="slide">
-      <div class="inner">
-        <header>
-          <div class="kicker">CASE STUDY</div>
-          <h2>“API는 200인데 화면이 죽었다”</h2>
-          <p class="sub">상태코드만 보면 놓치는 사각지대였어요. 스토어 홈이 P0로 무한로딩 났습니다.</p>
-        </header>
-        <div class="desc">
-          <table class="tbl">
-            <tbody>
-              <tr><td>상황</td><td>예약판매 작업 중 신규 <span class="mono">마감임박</span> badge(enum)가 추가됐으나, 클라이언트가 그 값을 파싱하지 못해 <strong style="color:var(--txt)">스토어 홈·TOP100 무한로딩</strong> (P0)</td></tr>
-              <tr><td>함정</td><td>API는 <span class="mono">200 OK</span> 정상 응답. 상태코드만 보는 계약 테스트도, 개별 기능 테스트도 통과한다</td></tr>
-              <tr><td>인사이트</td><td><em>200 OK ≠ 렌더링 정상.</em> 진입점이 실제로 그려지는지 + 응답 enum/badge 값의 <strong style="color:var(--txt)">drift</strong>를 봐야 잡힌다</td></tr>
-              <tr><td>가드</td><td>진입점 렌더링 스모크 + 계약 테스트의 enum/스키마 drift 감지로 확장</td></tr>
-            </tbody>
-          </table>
-          <p class="note">→ 진입점 렌더링 스모크가 있었다면 무인 회귀에서 즉시 걸렸을 유형. 이 사각지대에서 도출한 설계 원칙입니다.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 14. HARNESS -->
+    <!-- 13. HARNESS -->
     <section class="slide">
       <div class="inner">
         <header>
@@ -499,7 +477,7 @@
       </div>
     </section>
 
-    <!-- 15. CONTACT -->
+    <!-- 14. CONTACT -->
     <section class="slide">
       <div class="inner">
         <header>
@@ -509,6 +487,7 @@
         </header>
         <div class="desc">
           <div class="role" style="font-size:16px">
+            <p style="color:var(--txt-dim);font-size:clamp(15px,1.6vw,18px);line-height:1.9;max-width:780px">1인 환경에서 E2E 자동화 프레임워크를 제로 베이스로 세우고, 커머스·OTT의 결제·계정을 검증해 왔습니다. 터진 곳을 막는 데서 시작했지만, 이제는 물이 알아서 제 길로 흐르게 만드는 쪽으로 가고 있습니다.</p>
           </div>
           <div class="badges" style="margin-top:20px">
             <span class="badge">✉️ duo2208@gmail.com</span>
