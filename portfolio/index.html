@@ -32,6 +32,14 @@
   .counter { position:fixed; bottom:20px; right:24px; z-index:60; font-size:16px; color:var(--txt-mute); font-variant-numeric:tabular-nums; }
   .counter b { color:var(--txt); }
   .hint { position:fixed; bottom:20px; left:24px; z-index:60; font-size:15px; color:var(--txt-mute); }
+  /* 챕터 레일 — 상단 가운데, 타이틀 슬라이드에선 숨김 */
+  .chapters { position:fixed; top:13px; left:50%; transform:translateX(-50%); z-index:60; display:flex;
+    font-size:13px; font-weight:700; letter-spacing:.08em; color:var(--txt-mute); transition:opacity .4s ease; }
+  .chapters span { position:relative; padding:5px 16px; white-space:nowrap; transition:color .3s; }
+  .chapters span + span::before { content:""; position:absolute; left:0; top:50%; transform:translateY(-50%); width:1px; height:11px; background:var(--line); }
+  .chapters span.on { color:var(--accent); }
+  .chapters span.on::after { content:""; position:absolute; left:16px; right:16px; bottom:-1px; height:2px; border-radius:2px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); }
+  .chapters.hide { opacity:0; pointer-events:none; }
   .arrow { position:fixed; top:50%; transform:translateY(-50%); z-index:60; width:44px; height:44px; border-radius:50%;
     background:var(--card); border:1px solid var(--line); color:var(--txt-dim); font-size:23px; cursor:pointer;
     display:flex; align-items:center; justify-content:center; transition:.2s; user-select:none; }
@@ -150,6 +158,7 @@
 <body>
 
 <div class="progress" id="progress"></div>
+<div class="chapters" id="chapters"><span>임팩트</span><span>설계</span><span>운영</span><span>자산화</span></div>
 
 <div class="deck">
   <div class="track" id="track">
@@ -517,6 +526,10 @@
   const prevBtn = document.getElementById('prev');
   const nextBtn = document.getElementById('next');
   const dotsWrap = document.getElementById('dots');
+  const chaptersWrap = document.getElementById('chapters');
+  const chapterEls = [...chaptersWrap.children];
+  // 슬라이드 인덱스 → 챕터(0~3), 타이틀(0)은 -1로 레일 숨김
+  const chapterOf = (n) => n === 0 ? -1 : n <= 3 ? 0 : n <= 7 ? 1 : n <= 11 ? 2 : 3;
   document.getElementById('total').textContent = total;
 
   let i = 0;
@@ -535,6 +548,9 @@
     dots.forEach((d, n) => d.classList.toggle('on', n === i));
     prevBtn.classList.toggle('hidden', i === 0);
     nextBtn.classList.toggle('hidden', i === total - 1);
+    const ch = chapterOf(i);
+    chapterEls.forEach((el, c) => el.classList.toggle('on', c === ch));
+    chaptersWrap.classList.toggle('hide', ch === -1);
     slides[i].scrollTop = 0;
   }
   function go(n) { i = Math.max(0, Math.min(total - 1, n)); render(); }
