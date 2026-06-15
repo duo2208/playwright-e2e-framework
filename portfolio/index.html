@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="OTT E2E 테스트 자동화 프레임워크 0→1 · AI 자가진단 · CI/CD 슬라이드 포트폴리오" />
+<style>
+  :root {
+    --bg:#f7f9fc; --bg-soft:#eceff5; --card:#ffffff; --line:#e2e7f0;
+    --txt:#1a2030; --txt-dim:#394150; --txt-mute:#5b6473;
+    --accent:#4f5bd5; --accent-2:#0d9488; --ok:#16a34a; --wip:#b45309;
+    --radius:14px; --maxw:980px;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--txt); overflow:hidden; word-break:keep-all; line-break:strict;
+    font-family:"Pretendard",-apple-system,BlinkMacSystemFont,"Segoe UI","Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    line-height:1.7; -webkit-font-smoothing:antialiased; }
+
+  /* ===== deck ===== */
+  .deck { position:fixed; inset:0; overflow:hidden; }
+  .track { display:flex; height:100%; transition:transform .5s cubic-bezier(.45,.05,.2,1); }
+  .slide { flex:0 0 100vw; height:100%; overflow-y:auto; display:flex; flex-direction:column;
+    justify-content:center; padding:64px 28px 84px; }
+  .slide::-webkit-scrollbar { width:0; }
+  .inner { max-width:var(--maxw); width:100%; margin:0 auto; }
+  .inner > header { margin-bottom:26px; }          /* 상단: 라벨·제목·서브설명 */
+  .inner > header .sub { margin-bottom:0; }         /* 간격은 header가 통일 관리 */
+  .inner > .desc { /* 본문 콘텐츠 */ }
+
+  /* progress + chrome */
+  .progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); z-index:60; transition:width .5s ease; }
+  .counter { position:fixed; bottom:20px; right:24px; z-index:60; font-size:16px; color:var(--txt-mute); font-variant-numeric:tabular-nums; }
+  .counter b { color:var(--txt); }
+  .hint { position:fixed; bottom:20px; left:24px; z-index:60; font-size:15px; color:var(--txt-mute); }
+  .arrow { position:fixed; top:50%; transform:translateY(-50%); z-index:60; width:44px; height:44px; border-radius:50%;
+    background:var(--card); border:1px solid var(--line); color:var(--txt-dim); font-size:23px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; transition:.2s; user-select:none; }
+  .arrow:hover { color:var(--txt); border-color:var(--accent); }
+  .arrow.prev { left:18px; } .arrow.next { right:18px; }
+  .arrow.hidden { opacity:0; pointer-events:none; }
+  .dots { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); z-index:60; display:flex; gap:7px; }
+  .dots i { width:7px; height:7px; border-radius:50%; background:var(--line); cursor:pointer; transition:.2s; }
+  .dots i.on { background:var(--accent); transform:scale(1.35); }
+
+  /* typography */
+  .eyebrow { color:var(--accent-2); font-size:16px; letter-spacing:.14em; text-transform:uppercase; font-weight:700; }
+  .kicker { color:var(--accent); font-size:16px; font-weight:700; letter-spacing:.08em; }
+  h1 { font-size:clamp(35px,6vw,59px); line-height:1.15; margin:16px 0 20px; letter-spacing:-.02em; }
+  h1 .grad { background:linear-gradient(90deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  h2 { font-size:clamp(27px,3.6vw,37px); margin:8px 0 6px; letter-spacing:-.01em; }
+  h3 { font-size:20px; margin:0 0 6px; }
+  .sub { color:var(--txt-dim); margin-bottom:26px; font-size:19px; }
+  em { color:var(--accent-2); font-style:normal; }
+  p.lede { color:var(--txt-dim); font-size:clamp(20px,2vw,23px); max-width:760px; }
+  .role { margin-top:26px; font-size:18px; color:var(--txt-mute); display:flex; gap:18px; flex-wrap:wrap; }
+  .role b { color:var(--txt); font-weight:600; }
+  .narr p { color:var(--txt-dim); margin-bottom:14px; font-size:19px; }
+  .narr p strong { color:var(--txt); font-weight:600; }
+
+  /* components */
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px 18px; }
+  .stat .num { font-size:35px; font-weight:800; color:var(--accent-2); letter-spacing:-.02em; }
+  .stat .lbl { font-size:16px; color:var(--txt-dim); margin-top:8px; }
+  .badges { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+  .badge { font-size:16px; background:var(--bg-soft); border:1px solid var(--line); color:var(--txt-dim); padding:6px 12px; border-radius:999px; }
+  .badge b { color:var(--txt); font-weight:600; }
+
+  .tech { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+  .tech .t { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .tech .t .cat { font-size:14px; color:var(--txt-mute); text-transform:uppercase; letter-spacing:.08em; }
+  .tech .t .val { font-size:19px; font-weight:600; margin-top:5px; }
+
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .cards.three { grid-template-columns:repeat(3,1fr); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px; }
+  .card .tag { display:inline-block; font-size:15px; font-weight:700; color:var(--accent); background:rgba(124,140,255,.12); padding:2px 9px; border-radius:999px; margin-bottom:9px; }
+  .card p { color:var(--txt-dim); font-size:17px; }
+  .card h3 { font-size:18.5px; }
+
+  .tbl { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+  .tbl th, .tbl td { text-align:left; padding:12px 16px; border-bottom:1px solid var(--line); vertical-align:top; font-size:17.5px; }
+  .tbl th { background:var(--bg-soft); color:var(--txt-dim); font-weight:600; font-size:15px; text-transform:uppercase; letter-spacing:.06em; }
+  .tbl tr:last-child td { border-bottom:none; }
+  .tbl td:first-child { color:var(--accent-2); font-weight:700; white-space:nowrap; }
+  .mono { font-family:"SF Mono",ui-monospace,Menlo,Consolas,monospace; font-size:16px; color:var(--txt); }
+  .pill { font-size:15px; font-weight:700; padding:3px 10px; border-radius:999px; white-space:nowrap; }
+  .pill.done { color:var(--ok); background:rgba(74,222,128,.12); }
+  .pill.wip { color:var(--wip); background:rgba(251,191,36,.12); }
+  .pill.next { color:var(--txt-mute); background:var(--bg-soft); }
+
+  .pipe { display:flex; gap:10px; flex-wrap:wrap; }
+  .pipe .step { flex:1 1 150px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .pipe .step .n { font-size:14px; color:var(--accent); font-weight:700; }
+  .pipe .step .t { font-weight:700; margin:5px 0; font-size:19px; }
+  .pipe .step .d { font-size:16px; color:var(--txt-dim); }
+
+  .note { color:var(--txt-mute); font-size:16.5px; margin-top:14px; }
+
+  /* 철학 콜아웃 — "무엇을 자동화하지 않을 것인가"를 막마다 분산 */
+  .callout { margin-top:16px; background:rgba(13,148,136,.06); border:1px solid #cbe7e2; border-left:3px solid var(--accent-2); border-radius:10px; padding:12px 16px; font-size:16.5px; color:var(--txt-dim); }
+  .callout .lbl { font-weight:700; color:var(--accent-2); margin-right:7px; white-space:nowrap; }
+  .callout b { color:var(--txt); font-weight:600; }
+
+  /* 스크린샷 + Slack 목업 */
+  .figure { margin:0; }
+  figcaption { color:var(--txt-dim); font-size:16.5px; margin-top:10px; line-height:1.6; }
+  .livebtn { display:inline-flex; align-items:center; gap:6px; margin-top:14px; padding:10px 18px; border-radius:10px;
+    background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; font-weight:700; font-size:15px;
+    text-decoration:none; box-shadow:0 2px 12px rgba(79,91,213,.25); }
+  .livebtn:hover { opacity:.92; }
+  .shot { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:var(--bg-soft); box-shadow:0 2px 10px rgba(20,30,60,.07); }
+  .shot .bar { display:flex; align-items:center; gap:6px; padding:9px 13px; background:#eef1f6; border-bottom:1px solid var(--line); font-size:13px; color:var(--txt-mute); }
+  .shot .bar i { width:10px; height:10px; border-radius:50%; background:#cfd6e2; }
+  .shot .bar span { margin-left:6px; }
+  .shot .body { background:#fff; }
+  .shot .body img { display:block; width:100%; }
+  .shot .ph { padding:56px 16px; text-align:center; color:var(--txt-mute); font-size:15px; line-height:1.9; }
+  .shot .ph span { font-size:13px; }
+
+  .slackcard { max-width:560px; border:1px solid var(--line); border-left:3px solid var(--accent-2); border-radius:8px; background:var(--card); padding:14px 16px; box-shadow:0 1px 3px rgba(20,30,60,.05); }
+  .slackcard .top { display:flex; align-items:center; gap:8px; margin-bottom:9px; }
+  .slackcard .ava { width:24px; height:24px; border-radius:6px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); display:inline-flex; align-items:center; justify-content:center; font-size:14px; }
+  .slackcard .name { font-weight:700; font-size:15px; }
+  .slackcard .tagapp { font-size:10px; background:var(--bg-soft); color:var(--txt-mute); padding:1px 5px; border-radius:3px; font-weight:700; letter-spacing:.04em; }
+  .slackcard .time { font-size:12px; color:var(--txt-mute); }
+  .slackcard .line { font-size:14.5px; margin:3px 0; }
+  .slackbtn { display:inline-block; font-size:13px; border:1px solid var(--line); border-radius:6px; padding:4px 11px; color:var(--txt); background:var(--bg-soft); }
+
+  @media (max-width:800px) {
+    .stats,.tech { grid-template-columns:repeat(2,1fr); }
+    .cards,.cards.three { grid-template-columns:1fr; }
+    .arrow { display:none; }
+  }
+
+  .card,.stat,.tbl,.pipe .step,.tech .t { box-shadow:0 1px 3px rgba(20,30,60,.05); }
+
+  /* 인쇄: 전체 슬라이드를 페이지별로 펼치고 네비 숨김 */
+  @media print {
+    body { overflow:visible; background:#fff; }
+    .progress,.arrow,.dots,.counter,.hint { display:none !important; }
+    .deck { position:static; inset:auto; overflow:visible; }
+    #track { transform:none !important; display:block; height:auto; }
+    .slide { width:100%; height:auto; min-height:auto; overflow:visible; padding:22px 0; justify-content:flex-start; page-break-after:always; }
+    .slide:last-child { page-break-after:auto; }
+    .card,.stat,.tbl,.pipe .step,.tech .t,.cards,.cards.three,.stats,.tech { break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<div class="deck">
+  <div class="track" id="track">
+
+    <!-- 1. TITLE -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <h1>새는 곳부터 <span class="grad">막았습니다</span></h1>
+          <p class="lede"><strong style="color:var(--txt)">서버 배포</strong>가 머지될 때, 그리고 통합 검수가 시작될 때.<br>
+            ㅡ 회귀가 가장 잘 새는 이 두 지점에 먼저 게이트를 세웠습니다.<br>
+            필요한 곳 부터 자동화를 시작해갑니다.</p>
+        </header>
+        <div class="desc">
+          <div class="role" style="justify-content:flex-end">
+            <span><b>QA Engineer | 이지민</b></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. IMPACT 1/2 — 핵심 성과(숫자) -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">IMPACT · 1/2</div>
+          <h2>핵심 성과</h2>
+          <p class="sub">로그인 ~ 결제 ~ 재생 핵심 플로우 · 사내 2026 혁신 KR</p>
+        </header>
+        <div class="desc">
+          <div class="stats">
+            <div class="stat"><div class="num">&lt; 10분</div><div class="lbl">배포 전 Sanity Check</div></div>
+            <div class="stat"><div class="num">80%</div><div class="lbl">핵심 경로 자동화율</div></div>
+            <div class="stat"><div class="num">111건</div><div class="lbl">테스트 케이스</div></div>
+            <div class="stat"><div class="num">일 3회</div><div class="lbl">무인 CI 회귀</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. IMPACT 2/2 — 개선 전 → 현재 (토스식 before/after) -->
+    <section class="slide">
+      <div class="inner">
+        <header style="position:relative">
+          <div class="kicker">IMPACT · 2/2</div>
+          <h2>검수 없이 나가던 배포에, 게이트를 달다</h2>
+          <p class="sub">회귀가 가장 잘 새던 두 길목, 서버 배포 PR과 통합 검수입니다. 이제 회귀는 배포 전에 걸립니다.</p>
+          <span style="position:absolute;top:2px;right:0;font-size:14px;font-weight:700;color:#15803d;background:#e6f4ea;border:1px solid #bfe3cb;border-radius:999px;padding:5px 14px">개선 전 → 현재</span>
+        </header>
+        <div class="desc">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div style="background:#fde8e8;border:1px solid #f4c2c2;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,60,.05)">
+              <div style="font-size:14px;font-weight:700;color:#c42e36;letter-spacing:.04em">개선 전</div>
+              <ul style="margin:10px 0 0;padding-left:18px;color:var(--txt-dim);font-size:17px;line-height:1.95">
+                <li>서버 배포가 <b style="color:var(--txt)">QA 검수 없이</b> 그대로 나감</li>
+                <li>잦은 배포를 <b style="color:var(--txt)">사람이 매번 회귀 확인 못 함</b></li>
+                <li>문제는 배포 <b style="color:var(--txt)">이후에야</b> 발견</li>
+              </ul>
+            </div>
+            <div style="background:#e6f4ea;border:1px solid #bfe3cb;border-radius:12px;padding:18px 20px;box-shadow:0 1px 3px rgba(20,30,60,.05)">
+              <div style="font-size:14px;font-weight:700;color:#15803d;letter-spacing:.04em">현재</div>
+              <ul style="margin:10px 0 0;padding-left:18px;color:var(--txt-dim);font-size:17px;line-height:1.95">
+                <li>서버 배포 PR → <b style="color:var(--txt)">회귀 게이트</b>가 머지 전 차단</li>
+                <li>통합 검수 시작 → <b style="color:var(--txt)">핵심 경로·환경 헬스</b> 확보</li>
+                <li>일 3회 cron → <b style="color:var(--txt)">야간 경비원</b> (자는 동안 catch)</li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ROADMAP (앞으로 이동 — 전체 여정 한눈에) -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">MATURITY</div>
+          <h2>자동화 성숙도 로드맵</h2>
+          <p class="sub">Reality → Hybrid → Flow → Self-Heal, 다음은 다른 도메인으로</p>
+        </header>
+        <div class="desc">
+          <table class="tbl">
+            <thead><tr><th>단계</th><th>목표</th><th>핵심 특징</th><th>상태</th></tr></thead>
+            <tbody>
+              <tr><td>Phase 1 · Reality</td><td>진입점 안정화</td><td>Locator 분리, 디버깅 가능한 코드</td><td><span class="pill done">완료</span></td></tr>
+              <tr><td>Phase 2 · Hybrid</td><td>사용자 여정 확장</td><td>비즈니스 로직 연속성(결제) 검증</td><td><span class="pill done">완료</span></td></tr>
+              <tr><td>Phase 3 · Flow</td><td>전체 시스템 최적화</td><td>CI/CD 통합 · 일 3회 cron · Allure 트렌드</td><td><span class="pill done">완료</span></td></tr>
+              <tr><td>Phase 4 · Self-Heal</td><td>자가 진단·격리·치유</td><td>AI 진단 + 사람 교정·flaky 자가격리 → 자동 수정 PR</td><td><span class="pill wip">진행 중</span></td></tr>
+              <tr><td>Phase 5 · Expand</td><td>타 도메인 확장</td><td>앱(iOS·Android·TV) 자동화 · 웹 스토어 추가</td><td><span class="pill next">예정</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. TECH -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">STACK</div>
+          <h2>기술 스택</h2>
+          <p class="sub">Playwright + pytest로 짜고, 운영과 AI까지 묶었습니다.</p>
+        </header>
+        <div class="desc">
+          <div class="tech">
+            <div class="t"><div class="cat">Language</div><div class="val">Python 3.12+</div></div>
+            <div class="t"><div class="cat">E2E</div><div class="val">Playwright</div></div>
+            <div class="t"><div class="cat">Test</div><div class="val">pytest · xdist</div></div>
+            <div class="t"><div class="cat">Report</div><div class="val">Allure + Google Sheets</div></div>
+            <div class="t"><div class="cat">CI/CD</div><div class="val">GitHub Actions<br>(self-hosted)</div></div>
+            <div class="t"><div class="cat">Ops</div><div class="val">Slack Bot · Redis</div></div>
+            <div class="t"><div class="cat">AI</div><div class="val">Claude Code</div></div>
+            <div class="t"><div class="cat">Package</div><div class="val">uv</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. ARCHITECTURE -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">ARCHITECTURE</div>
+          <h2>4-Layer 아키텍처</h2>
+          <p class="sub"><span class="mono">locators → pages → flows → tests</span>. UI가 바뀌어도 잘 흔들리지 않는 뼈대를 세웠습니다.</p>
+        </header>
+        <div class="desc">
+          <table class="tbl">
+            <thead><tr><th>Layer</th><th>역할</th><th>경계 규칙</th></tr></thead>
+            <tbody>
+              <tr><td>Locator</td><td>요소 위치 정의</td><td><span class="mono">role→id→test_id→text→xpath</span> 폴백 체인</td></tr>
+              <tr><td>Page</td><td>페이지 단위 동작</td><td>BasePage 상속 · 비즈니스 로직 금지</td></tr>
+              <tr><td>Flow</td><td>여러 Page 조합 (결제 E2E)</td><td>TestFactory · assertion 금지</td></tr>
+              <tr><td>Test</td><td>AAA 패턴 · assertion</td><td>selector 직접 작성 금지</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. STORAGE STATE (+ 철학 콜아웃①) -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">AUTH</div>
+          <h2>Storage State — 3단계 인증 자동 복구</h2>
+          <p class="sub">로그인은 한 번만 합니다. 저장해둔 세션을 재사용하고, 만료됐을 때만 알아서 다시 만듭니다.</p>
+        </header>
+        <div class="desc">
+          <p class="callout">OTT는 비회원·베이직·프리미엄·소셜·결제 회원까지 <b>권한과 계정 종류가 많았습니다.</b> 권한마다 보이는 화면이 다르니, 권한별로 로그인 상태를 따로 만들어두고 테스트마다 맞는 걸 끼웠어요. 이 <b>“권한을 정확히 흉내 내는 것”</b>이 OTT 자동화에서 특히 중요한 부분이었습니다.</p>
+          <br>
+          <table class="tbl">
+            <thead><tr><th>단계</th><th>조건</th><th>비용</th></tr></thead>
+            <tbody>
+              <tr><td>① 재사용</td><td>토큰 유효 + 계정 일치</td><td>0초</td></tr>
+              <tr><td>② API 재생성</td><td>토큰 만료 / 계정 불일치</td><td>~1초</td></tr>
+              <tr><td>③ UI fallback</td><td>API 실패</td><td>~30초</td></tr>
+            </tbody>
+          </table>
+          <div style="display:flex;flex-wrap:wrap;gap:14px;margin-top:16px">
+            <div style="flex:1 1 230px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:14px 18px">
+              <div style="font-size:15px;">런당 로그인 횟수</div>
+              <div style="font-size:24px;font-weight:800;margin-top:4px;letter-spacing:-.01em"><span style="color:var(--txt-mute)">39회</span> → <span style="color:var(--accent-2)">6회</span></div>
+            </div>
+            <div style="flex:1 1 230px;background:var(--bg-soft);border:1px solid var(--line);border-radius:12px;padding:14px 18px">
+              <div style="font-size:15px;">런당 로그인 시간(합산)</div>
+              <div style="font-size:24px;font-weight:800;margin-top:4px;letter-spacing:-.01em"><span style="color:var(--txt-mute)">~9.8분</span> → <span style="color:var(--accent-2)">~6초</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. DRM · CDP -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">DRM · PLAYER</div>
+          <h2>DRM 영상은 실제 Chrome으로</h2>
+          <p class="sub">Playwright 기본 브라우저로는 DRM 콘텐츠가 재생되지 않습니다. 쉬운 길과 정확한 길 사이의 선택이 필요했습니다.</p>
+        </header>
+        <div class="desc">
+          <p class="callout" style="margin-top:0;margin-bottom:18px">DRM은 영상이 무단으로 복제·재생되지 않게 막는 <b>저작권 보호 기술</b>입니다. 보호된 영상은 일반 자동화 브라우저에서 재생이 막혀, 재생을 검증하는 것 자체가 까다로웠습니다.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch">
+            <div style="background:var(--bg-soft);border:1px dashed #cdd4e0;border-radius:14px;padding:20px;opacity:.78">
+              <div style="font-size:14px;font-weight:700;color:var(--txt-mute);letter-spacing:.04em">✕ 안 택한 길</div>
+              <h3 style="margin:8px 0 6px;color:var(--txt-dim)">DRM 없는 테스트 영상</h3>
+              <p style="font-size:16px;color:var(--txt-dim);margin:0">제작은 쉽지만, 사용자가 실제로 보는 DRM 재생 경로를 거치지 않습니다. <b style="color:var(--txt)">‘테스트를 위한 테스트’</b>가 될 위험.</p>
+            </div>
+            <div style="background:rgba(13,148,136,.07);border:1px solid var(--accent-2);border-radius:14px;padding:20px;box-shadow:0 2px 12px rgba(13,148,136,.12)">
+              <div style="font-size:14px;font-weight:700;color:var(--accent-2);letter-spacing:.04em">✓ 택한 길</div>
+              <h3 style="margin:8px 0 6px">CDP — 실제 DRM 재생</h3>
+              <p style="font-size:16px;color:var(--txt-dim);margin:0">비용이 더 들더라도 <span class="mono">connect_over_cdp</span>로 실제 Chrome을 연결해 <b style="color:var(--txt)">사용자가 보는 경로 그대로</b> 검증합니다.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. CI/CD & OPS -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">CI/CD PIPELINE</div>
+          <h2>무인 회귀 파이프라인</h2>
+          <p class="sub">PR · cron · 수동 세 갈래로 돌고, 러너와 세션은 사람 손 없이 준비됩니다.</p>
+        </header>
+        <div class="desc">
+          <div class="cards">
+            <div class="card"><span class="tag">RUNNER</span><h3>self-hosted macOS 러너</h3><p>DRM·CDP 재생은 실제 Chrome이 필요해 러너를 자체 호스팅했습니다. Mac Studio에서 돌아가고, 한 런은 최대 30분으로 제한합니다.</p></div>
+            <div class="card"><span class="tag">TRIGGER</span><h3>3갈래 트리거</h3><ul style="margin:0;padding-left:18px;color:var(--txt-dim);font-size:16.5px;line-height:1.8"><li><b>PR</b>: dev P0 스모크</li><li><b>cron</b>: prod · qa 1회 전체 회귀</li><li><b>수동</b>: 환경·우선순위·도메인 직접 선택</li></ul></div>
+            <div class="card"><span class="tag">CACHE</span><h3>영속 워크스페이스 · 병렬</h3><p><span class="mono">clean:false</span>로 런 사이에 venv·Playwright 캐시를 보존하고, <br><span class="mono">xdist</span> 3-worker로 병렬 실행합니다.</p></div>
+            <div class="card"><span class="tag">AUTH</span><h3>런 시작 시 세션 자동 생성</h3><p>매 런 권한별 Storage State를 API로 만들고, 실패하면 UI 로그인으로 폴백합니다. 따라서 사람이 미리 로그인해둘 필요가 없습니다.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. REPORTS -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">REPORTS</div>
+          <h2>리포트 대시보드</h2>
+        </header>
+        <div class="desc">
+          <figure class="figure">
+            <div class="shot">
+              <div class="bar"><i></i><i></i><i></i><span>duo2208.github.io/playwright-e2e-framework</span></div>
+              <div class="body">
+                <div class="ph">📊 <b>데모 대시보드</b><br><span>아래 버튼으로 직접 열어보거나, 캡처를 assets/allure-dashboard.png 로 넣으세요</span></div>
+                <img src="assets/allure-dashboard.png" alt="커스텀 Allure 대시보드"
+                     onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'">
+              </div>
+            </div>
+            <a class="livebtn" href="https://duo2208.github.io/playwright-e2e-framework/overview.html" target="_blank" rel="noopener">🔗 데모 대시보드 열기 →</a>
+              <figcaption>실패 로그 / <strong style="color:var(--txt)">flaky 재현율 추이 · 격리 후보</strong> / 테스트케이스 까지 Allure 대시보드를 통해 탐색 가능합니다.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. SLACK ALERT + AI 1차 진단 (9c+9d 압축, "사람 참고용 신호") + 철학 콜아웃② -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">ALERTS · AI DIAGNOSIS</div>
+          <h2>Slack 실시간 알림 &amp; AI 1차 진단</h2>
+          <p class="sub">정기 회귀 결과를 Slack으로 바로 받습니다. <br> 실패엔 <em>AI 1차 진단</em>을 붙이지만, 진단이 맞았는지는 <strong>이후 재발 여부로</strong> 확인 중 입니다.</p>
+        </header>
+        <div class="desc">
+          <!-- ① 리포트 요약 + AI 1차 진단 + 맞음/다름 버튼 -->
+          <p class="callout">AI 진단은 참고용으로만 사용합니다.</b> "AI가 맞았나"를 사람이 바로 체크하는 방식은, 이미 AI 답을 본 탓에 무심코 동의하게 되는 <b>확증 편향</b>이 생겼어요. 진짜 기준은 시간이며, 고친 테스트가 이후 여러 번 돌아도 안 깨져야 제대로 고친 것으로 봅니다.</p>
+          <br>
+
+          <figure class="figure">
+            <div class="slackcard">
+              <div class="top"><span class="ava">🤖</span><span class="name">qa.automation</span><span class="tagapp">APP</span><span class="time">09:48</span></div>
+              <div class="line"><b>🧪 Web E2E 자동화 테스트 결과</b></div>
+              <div class="line"><b>결과</b> 🔴 2건 실패 &nbsp;·&nbsp; <b>통과율</b> 98.1% (101/103)</div>
+              <div class="line" style="color:var(--txt-dim)"><b>환경</b> PROD &nbsp;·&nbsp; <b>런 소요</b> 7분 9초 &nbsp;·&nbsp; <b>실행자</b> 정기 회귀(cron)</div>
+              <div class="line"><span class="mono" style="display:block;white-space:pre-wrap;background:var(--bg-soft);padding:10px 12px;border-radius:6px;font-size:12.5px">LQ-PLAY-005 test_player_quality_setting
+ · 🔍 검출: 화질 미반영 target=720±20, actual=1080
+ · 🤖 AI 1차 진단: 🩹 Product bug 의심 (55%) · <b>참고용 신호</b></span></div>
+            </div>
+          </figure>
+
+          <!-- ② ❌다름 → 사람이 실제 원인 기록 (AI 진단 vs 실제, 1개 예시로 압축) -->
+          <figure class="figure" style="margin-top:14px">
+            <div class="slackcard" style="margin-left:24px;border-left:3px solid var(--accent)">
+              <div class="top"><span class="ava" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">🧑‍💻</span><span class="name">Ollie</span><span class="time">사람 확인 · AI 1차 진단 오진</span></div>
+              <div class="line" style="margin-top:2px"><b>LQ-PLAY-005</b> 화질 변경 미반영</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0">
+                <div style="background:#fde8e8;border:1px solid #f4c2c2;border-radius:8px;padding:9px 11px"><span style="color:#c42e36;font-size:12px;font-weight:700">🤖 AI 진단</span><br><b>🩹 Product bug · 55%</b> &nbsp;<span style="color:#c42e36">❌</span></div>
+                <div style="background:#e6f4ea;border:1px solid #bfe3cb;border-radius:8px;padding:9px 11px"><span style="color:#15803d;font-size:12px;font-weight:700">🧑‍💻 실제 원인</span><br><b>⏱️ Timing</b> &nbsp;<span style="color:#15803d">✅</span></div>
+              </div>
+              <div class="line" style="color:var(--txt-dim);font-size:13.5px">ABR은 즉시 720 명령을 받아도, 이미 받은 1080 buffer(~30s) 소진 후에야 720 적용 → 재시도 0회라 <em>일시 현상을 fail</em>로 본 것.</div>
+            </div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. FLAKY 자가격리 + 철학 콜아웃③ -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">STABILITY · AUTO-QUARANTINE</div>
+          <h2>Flaky 자가격리 — 게이트 신뢰도를 지키는 자동화</h2>
+          <p class="sub">간헐 실패(flaky)가 쌓이면 테스트를 못 믿게 됩니다. <em>그 노이즈를 재현율로 가려내기로 했습니다.</em></p>
+        </header>
+        <div class="desc">
+          <div class="pipe">
+            <div class="step"><div class="n">1 · 적재</div><div class="t">재현율 누적</div><div class="d">CI가 매 런 fail 이력을 history에 append</div></div>
+            <div class="step"><div class="n">2 · 판정</div><div class="t">임계 초과</div><div class="d">최근 N회 중 fail rate ≥ 임계 → 격리 대상</div></div>
+            <div class="step"><div class="n">3 · 격리</div><div class="t">자동 quarantine</div><div class="d">게이트에서 제외, 단 계속 실행·추적</div></div>
+            <div class="step"><div class="n">4 · 해제</div><div class="t">자동 복귀</div><div class="d">N회 연속 PASS 확인 시 격리 해제</div></div>
+          </div>
+          <div class="cards" style="margin-top:14px">
+            <div class="card"><span class="tag">WHY</span><h3>릴리즈를 막지 않으면서</h3><p>flaky 1건이 전체 게이트를 빨갛게 만들지 않게 <br>— 격리로 <b>신호 대 잡음</b>을 지키되 추적은 멈추지 않는다.</p></div>
+            <div class="card"><span class="tag">GUARD</span><h3>회귀는 격리하지 않는다</h3><p><b>100% 실패는 진짜 버그</b> → 격리 부적합. <br> — 진짜 회귀를 숨기지 않기 위한 안전장치.</p></div>
+          </div>
+          <p class="callout">자가격리는 사람의 판단을 대신하기보다 시간을 벌어주는 역할입니다.</b> 간헐 실패가 당장 릴리즈를 막지 않게 비켜두되 데이터는 계속 쌓아서, 급한 불 끄듯 말고 여유 있을 때 제대로 들여다볼 수 있게 하기 위함입니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13. CASE STUDY -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">CASE STUDY</div>
+          <h2>“API는 200인데 화면이 죽었다”</h2>
+          <p class="sub">상태코드만 보면 놓치는 사각지대였어요. 스토어 홈이 P0로 무한로딩 났습니다.</p>
+        </header>
+        <div class="desc">
+          <table class="tbl">
+            <tbody>
+              <tr><td>상황</td><td>예약판매 작업 중 신규 <span class="mono">마감임박</span> badge(enum)가 추가됐으나, 클라이언트가 그 값을 파싱하지 못해 <strong style="color:var(--txt)">스토어 홈·TOP100 무한로딩</strong> (P0)</td></tr>
+              <tr><td>함정</td><td>API는 <span class="mono">200 OK</span> 정상 응답. 상태코드만 보는 계약 테스트도, 개별 기능 테스트도 통과한다</td></tr>
+              <tr><td>인사이트</td><td><em>200 OK ≠ 렌더링 정상.</em> 진입점이 실제로 그려지는지 + 응답 enum/badge 값의 <strong style="color:var(--txt)">drift</strong>를 봐야 잡힌다</td></tr>
+              <tr><td>가드</td><td>진입점 렌더링 스모크 + 계약 테스트의 enum/스키마 drift 감지로 확장</td></tr>
+            </tbody>
+          </table>
+          <p class="note">→ 진입점 렌더링 스모크가 있었다면 무인 회귀에서 즉시 걸렸을 유형. 이 사각지대에서 도출한 설계 원칙입니다.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 14. HARNESS -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="kicker">HARNESS ENGINEERING</div>
+          <h2>AI 하네스 · 자산화</h2>
+          <p class="sub">혼자 잘 쓰는 건 반쪽이라, 팀이 다시 쓸 수 있게 <em>구조</em>로 남겼습니다.</p>
+        </header>
+        <div class="desc">
+          <div class="cards">
+            <div class="card"><span class="tag">RULES</span><h3>경로 기반 자동 적용 규칙</h3><p><span class="mono">.claude/rules/</span> — python·testing·locator가 <span class="mono">paths</span>로 자동 적용. 실수 3회 → 규칙화 → skill 추출.</p></div>
+            <div class="card"><span class="tag">AGENTS</span><h3>전문 에이전트 4종</h3><p>e2e-runner · python-reviewer · security-reviewer · <b>automation-spec-writer</b>(SDD: Policy Spec → <span class="mono">LQ-</span> test_id 사전 할당).</p></div>
+            <div class="card"><span class="tag">SKILLS</span><h3>재사용 스킬 4종</h3><p>analyze-fails · gen-locator · pattern-replace · qa-test-review(리뷰어 4종 병렬 + moderator 최대 5라운드).</p></div>
+            <div class="card"><span class="tag">GUARDRAIL</span><h3>기계가 강제하는 안전장치</h3><p>hook으로 main push·시크릿 commit 차단, 저장 시 자동 포맷·lint. wiki에 도메인 known-flaky 자산화.</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. CONTACT -->
+    <section class="slide">
+      <div class="inner">
+        <header>
+          <div class="eyebrow">THANK YOU</div>
+          <p style="color:var(--txt-dim);font-size:clamp(17px,1.8vw,20px);margin:14px 0 4px;letter-spacing:-.01em">테스트를 위한 테스트가 아니라, <em>실제 여정</em>을 위해.</p>
+          <h1 style="font-size:clamp(28px,4.5vw,40px)">함께 <span class="grad">품질의 기준</span>을 만들고 싶습니다.</h1>
+        </header>
+        <div class="desc">
+          <div class="role" style="font-size:16px">
+          </div>
+          <div class="badges" style="margin-top:20px">
+            <span class="badge">✉️ duo2208@gmail.com</span>
+          </div>
+          <div class="role" style="justify-content:flex-end">
+            <p class="note" style="margin-top:30px">© 2026 E2E Test Automation Portfolio</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="arrow prev" id="prev">‹</div>
+<div class="arrow next" id="next">›</div>
+<div class="dots" id="dots"></div>
+<div class="counter"><b id="cur">1</b> / <span id="total">18</span></div>
+<div class="hint">← → · Space · 클릭 · 스와이프</div>
+
+<script>
+  const track = document.getElementById('track');
+  const slides = [...track.children];
+  const total = slides.length;
+  const progress = document.getElementById('progress');
+  const curEl = document.getElementById('cur');
+  const prevBtn = document.getElementById('prev');
+  const nextBtn = document.getElementById('next');
+  const dotsWrap = document.getElementById('dots');
+  document.getElementById('total').textContent = total;
+
+  let i = 0;
+  // dots
+  slides.forEach((_, n) => {
+    const d = document.createElement('i');
+    d.addEventListener('click', () => go(n));
+    dotsWrap.appendChild(d);
+  });
+  const dots = [...dotsWrap.children];
+
+  function render() {
+    track.style.transform = `translateX(${-i * 100}vw)`;
+    progress.style.width = `${((i + 1) / total) * 100}%`;
+    curEl.textContent = i + 1;
+    dots.forEach((d, n) => d.classList.toggle('on', n === i));
+    prevBtn.classList.toggle('hidden', i === 0);
+    nextBtn.classList.toggle('hidden', i === total - 1);
+    slides[i].scrollTop = 0;
+  }
+  function go(n) { i = Math.max(0, Math.min(total - 1, n)); render(); }
+  const next = () => go(i + 1);
+  const prev = () => go(i - 1);
+
+  nextBtn.addEventListener('click', next);
+  prevBtn.addEventListener('click', prev);
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0);
+    else if (e.key === 'End') go(total - 1);
+  });
+  // click zones (좌/우 빈 영역 클릭으로 이동 — 단, 링크/버튼 제외)
+  // touch swipe
+  let x0 = null;
+  track.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', (e) => {
+    if (x0 === null) return;
+    const dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+    x0 = null;
+  }, { passive: true });
+
+  render();
+</script>
+
+</body>
+</html>
