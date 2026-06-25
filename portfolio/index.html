@@ -205,7 +205,9 @@
         <header style="position:relative">
           <div class="kicker">IMPACT · 2/2</div>
           <h2>검수 없이 나가던 배포에, 게이트를 달다</h2>
-          <p class="sub">빠른 배포를 수동 검수로 따라가다 보니, 잦은 배포 속 회귀를 제때 다 잡지 못했어요. 게이트를 단 뒤 이렇게 달라졌습니다.</p>
+          <p class="sub">과거에는 빠른 제품 배포 속도를 맞추기 위해 수동 검수에 의존할 수밖에 없었고, 이로 인해 잦은 배포 속에서 발생할 수 있는 잠재적 회귀(Regression) 이슈를 실시간으로 모두 잡아내는 데 한계가 있었습니다.
+지금은 서버 배포 PR이 올라오는 즉시 게이트가 머지 전 단계에서 1차적인 방어선 역할을 해줍니다. 통합 검수가 시작되면 시스템이 먼저 핵심 경로와 환경 헬스를 확보하고, 하루 3회 정기적으로 도는 Cron 테스트는 모두가 퇴근한 야간 시간대에도 묵묵히 회귀 버그를 감시하는 경비원 역할을 수행합니다.
+</p>
           <span style="position:absolute;top:2px;right:0;font-size:14px;font-weight:700;color:#15803d;background:#e6f4ea;border:1px solid #bfe3cb;border-radius:999px;padding:5px 14px">개선 전 → 현재</span>
         </header>
         <div class="desc">
