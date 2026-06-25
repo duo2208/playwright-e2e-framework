@@ -261,7 +261,6 @@
         <header>
           <div class="kicker">STACK</div>
           <h2>기술 스택</h2>
-          <p class="sub">Playwright + pytest로 짜고, 운영과 AI까지 묶었습니다.</p>
         </header>
         <div class="desc">
           <div class="tech">
@@ -284,7 +283,7 @@
         <header>
           <div class="kicker">ARCHITECTURE</div>
           <h2>4-Layer 아키텍처</h2>
-          <p class="sub">화면이 조금만 바뀌어도 테스트 전체가 같이 무너지지 않도록, Playwright 테스트의 책임을 4개 계층으로 쪼갰습니다.</p>
+          <p class="sub">Playwright 테스트의 책임을 4개 계층으로 쪼개, 화면이 바뀌어도 테스트가 도미노처럼 무너지지 않도록 했습니다.</p>
         </header>
         <div class="desc">
           <table class="tbl">
@@ -309,7 +308,7 @@
           <p class="sub">로그인은 한 번만 합니다. 저장해둔 세션을 재사용하고, 만료됐을 때만 알아서 다시 만듭니다.</p>
         </header>
         <div class="desc">
-          <p class="callout">OTT는 비회원·베이직·프리미엄·소셜·결제 회원까지 <b>권한과 계정 종류가 많았습니다.</b> 권한마다 보이는 화면이 다르니, 이 <b>“권한을 정확히 흉내 내는 것”</b>이 OTT 자동화에서 특히 중요한 부분이었습니다.</p>
+          <p class="callout">OTT는 비회원·베이직·프리미엄·소셜·결제 회원까지 <b>권한과 계정 종류가 많았습니다.</b> 권한마다 보이는 화면이 다르니, 이 <b>“권한을 정확히 흉내 내는 것”</b>이 OTT 자동화에서 특히 중요했습니다.</p>
           <br>
           <table class="tbl">
             <thead><tr><th>단계</th><th>조건</th><th>비용</th></tr></thead>
@@ -355,7 +354,7 @@
             </div>
           </div>
             <br>
-            <p class="callout" style="margin-top:0;margin-bottom:18px">결과적으론 쉬운 길과 정확한 길 사이에서 후자를 선택했습니다. Chrome과 Playwright 기본 브라우저를 함께 띄우는 구조가 필요했고, 병렬 실행에서 worker별로 <b>포트·프로필·프로세스 정리</b>까지 격리하도록 직접 설계했습니다.</p>
+            <p class="callout" style="margin-top:0;margin-bottom:18px">결과적으론 쉬운 길과 정확한 길 사이에서 후자를 선택했습니다. Chrome과 Playwright 기본 브라우저를 함께 띄우는 구조가 필요했고, 병렬 실행에서 worker별로 <b>포트·프로필·프로세스 정리</b>까지 격리하도록 설계했습니다.</p>
         </div>
       </div>
     </section>
@@ -366,14 +365,14 @@
         <header>
           <div class="kicker">CI/CD PIPELINE</div>
           <h2>무인 회귀 파이프라인</h2>
-          <p class="sub">PR · cron · 수동 세 갈래로 돌고, 러너와 세션은 사람 손 없이 준비됩니다.</p>
+          <p class="sub">사람이 직접 누르지 않아도, 정해진 시점에 테스트가 알아서 돌고 실행 환경까지 준비됩니다.</p>
         </header>
         <div class="desc">
           <div class="cards">
-            <div class="card"><span class="tag">RUNNER</span><h3>self-hosted macOS 러너</h3><p>DRM·CDP 재생은 실제 Chrome이 필요해 러너를 자체 호스팅했습니다. Mac Studio에서 돌아가고, 한 런은 최대 30분으로 제한합니다.</p></div>
-            <div class="card"><span class="tag">TRIGGER</span><h3>3갈래 트리거</h3><ul style="margin:0;padding-left:18px;color:var(--txt-dim);font-size:16.5px;line-height:1.8"><li><b>PR</b>: dev P0 스모크</li><li><b>cron</b>: prod · qa 1회 전체 회귀</li><li><b>수동</b>: 환경·우선순위·도메인 직접 선택</li></ul></div>
-            <div class="card"><span class="tag">CACHE</span><h3>영속 워크스페이스 · 병렬</h3><p><span class="mono">clean:false</span>로 런 사이에 venv·Playwright 캐시를 보존하고, <br><span class="mono">xdist</span> 3-worker로 병렬 실행합니다.</p></div>
-            <div class="card"><span class="tag">AUTH</span><h3>런 시작 시 세션 자동 생성</h3><p>매 런 권한별 Storage State를 API로 만들고, 실패하면 UI 로그인으로 폴백합니다. 따라서 사람이 미리 로그인해둘 필요가 없습니다.</p></div>
+            <div class="card"><span class="tag">RUNNER</span><h3>테스트 실행 전용 PC를 직접 운영</h3><p>DRM 영상 재생엔 실제 Chrome이 필요해, 회사 Mac을 테스트 전용 실행기로 직접 운영합니다. 한 번 실행은 최대 30분으로 제한.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">self-hosted macOS runner · Mac Studio</span></p></div>
+            <div class="card"><span class="tag">TRIGGER</span><h3>언제 도는가 — 3가지 자동 실행</h3><ul style="margin:0;padding-left:18px;color:var(--txt-dim);font-size:16px;line-height:1.75"><li>코드 올릴 때(PR) — 핵심 경로만 빠르게 점검</li><li>매일 정해진 시각 — 전체 회귀 1회</li><li>필요할 때(수동) — 환경·범위 직접 선택</li></ul></div>
+            <div class="card"><span class="tag">SPEED</span><h3>빠르게 — 환경 재사용 + 병렬 실행</h3><p>실행할 때마다 처음부터 설치하지 않게 직전 환경을 재사용하고, 테스트를 여러 개로 나눠 동시에 돌려 시간을 줄입니다.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">clean:false · xdist 3-worker</span></p></div>
+            <div class="card"><span class="tag">AUTH</span><h3>로그인도 자동 — 사람이 미리 안 해도 됨</h3><p>실행할 때마다 권한별 로그인 상태를 API로 자동 생성해 끼웁니다. 실패하면 실제 화면 로그인으로 대체.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">권한별 Storage State 자동 주입</span></p></div>
           </div>
         </div>
       </div>
@@ -454,16 +453,16 @@
         </header>
         <div class="desc">
           <div class="pipe">
-            <div class="step"><div class="n">1 · 적재</div><div class="t">재현율 누적</div><div class="d">CI가 매 런 fail 이력을 history에 append</div></div>
+            <div class="step"><div class="n">1 · 적재</div><div class="t">재현율 누적</div><div class="d">CI가 매 런 fail 이력을 history에 추가합니다.</div></div>
             <div class="step"><div class="n">2 · 판정</div><div class="t">임계 초과</div><div class="d">최근 N회 중 실패율이 임계치를 넘으면 격리 대상이 됩니다.</div></div>
-            <div class="step"><div class="n">3 · 격리</div><div class="t">자동 quarantine</div><div class="d">메인 배포 게이트에서 제외, <br>단 백그라운드 실행·추적은 유지</div></div>
-            <div class="step"><div class="n">4 · 해제</div><div class="t">자동 복귀</div><div class="d">N회 연속 PASS 확인 시 격리 해제</div></div>
+            <div class="step"><div class="n">3 · 격리</div><div class="t">자동 quarantine</div><div class="d">메인 배포 게이트에서 제외하되, <br>백그라운드 실행·추적은 유지합니다</div></div>
+            <div class="step"><div class="n">4 · 해제</div><div class="t">자동 복귀</div><div class="d">N회 연속 PASS 확인 시 격리는 해제합니다.</div></div>
           </div>
           <div class="cards" style="margin-top:14px">
             <div class="card"><span class="tag">WHY</span><h3>릴리즈를 막지 않으면서</h3><p>flaky 1건이 전체 게이트를 빨갛게 만들지 않게 <br>— 격리로 <b>신호 대 잡음</b>을 지키되 추적은 멈추지 않는다.</p></div>
             <div class="card"><span class="tag">GUARD</span><h3>회귀는 격리하지 않는다</h3><p><b>100% 실패는 진짜 버그</b> → 격리 부적합. <br> — 진짜 회귀를 숨기지 않기 위한 안전장치.</p></div>
           </div>
-          <p class="callout">자가격리는 사람의 판단을 대신하기보다 시간을 벌어주는 역할입니다.</b> 간헐 실패가 당장 릴리즈를 막지 않게 비켜두되 데이터는 계속 쌓아서, 급한 불 끄듯 말고 여유 있을 때 제대로 들여다볼 수 있게 하기 위함입니다.</p>
+          <p class="callout">자가격리는 사람의 판단을 대신하기보다 시간을 벌어주는 역할입니다.</b> flaky가 당장 릴리즈를 막지 않게 비켜두되 데이터는 계속 쌓아서, 여유 있을 때 제대로 들여다볼 수 있게 합니다.</p>
         </div>
       </div>
     </section>
@@ -496,7 +495,7 @@
         </header>
         <div class="desc">
           <div class="cards">
-            <div class="card"><span class="tag">RULES</span><h3>AI가 매번 지키는 규칙집</h3><p>코드 · 테스트 · 화면요소 작성 규칙을 문서로 박아둬, AI가 늘 같은 기준으로 일합니다. 같은 실수가 3번 나오면 규칙으로 승격.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">.claude/rules · python·testing·locator</span></p></div>
+            <div class="card"><span clasㄱs="tag">RULES</span><h3>AI가 매번 지키는 규칙집</h3><p>코드 · 테스트 · 화면요소 작성 규칙을 문서로 박아둬, AI가 늘 같은 기준으로 일합니다. 같은 실수가 3번 나오면 규칙으로 승격.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">.claude/rules · python·testing·locator</span></p></div>
             <div class="card"><span class="tag">AGENTS</span><h3>역할별로 나눈 프롬프트·규칙</h3><p>코드 리뷰 · 보안 점검 · 테스트 설계 · 실패 디버깅을 역할별로 나눠 구성했습니다. 실행과 합격·불합격 판정은 AI가 아니라 <b>결정론적 코드</b> 몫이에요.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">e2e-runner · python-reviewer · security-reviewer · automation-spec-writer</span></p></div>
             <div class="card"><span class="tag">SKILLS</span><h3>자주 쓰는 작업을 버튼처럼</h3><p>실패 원인 분석, 화면요소 찾기처럼 반복되는 일을 호출 한 번으로 끝나게 만들었습니다.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">analyze-fails · gen-locator · pattern-replace · qa-test-review</span></p></div>
             <div class="card"><span class="tag">GUARDRAIL</span><h3>사람이 실수해도 기계가 막는 안전장치</h3><p>운영 배포나 비밀정보 노출 같은 위험한 작업은 시스템이 자동으로 차단합니다.<br><span class="mono" style="font-size:13px;color:var(--txt-mute)">git hook · 자동 포맷/lint · wiki known-flaky</span></p></div>
@@ -511,11 +510,11 @@
         <header>
           <div class="eyebrow">THANK YOU</div>
           <p style="color:var(--txt-dim);font-size:clamp(17px,1.8vw,20px);margin:14px 0 4px;letter-spacing:-.01em">테스트를 위한 테스트가 아니라, <em>실제 여정</em>을 위해.</p>
-          <h1 style="font-size:clamp(28px,4.5vw,40px)">함께 <span class="grad">품질의 기준</span>을 만들고 싶습니다.</h1>
+          <h1 style="font-size:clamp(28px,4.5vw,40px)">사람이 덜 움직여도, <span class="grad">품질은 지켜지게.</span></h1>
         </header>
         <div class="desc">
           <div class="role" style="font-size:16px">
-            <p style="color:var(--txt-dim);font-size:clamp(15px,1.6vw,18px);line-height:1.9;max-width:780px">1인 환경에서 E2E 자동화 프레임워크를 제로 베이스로 세우고, 커머스·OTT의 결제·계정을 검증해 왔습니다. 터진 곳을 막는 데서 시작했지만, 이제는 물이 알아서 제 길로 흐르게 만드는 쪽으로 가고 있습니다.</p>
+            <p style="color:var(--txt-dim);font-size:clamp(15px,1.6vw,18px);line-height:1.9;max-width:780px">1인 환경에서 E2E 자동화 프레임워크를 제로 베이스로 세우고, 커머스·OTT의 결제·계정을 검증해 왔습니다. 터진 곳을 막는 데서 시작했지만, 이제는 물이 알아서 제 길로 흐르게 만드는 쪽으로 가고 있습니다. 나아가 최신 코드베이스를 항상 참조하고 새 테스트를 스스로 작성·보강하는 자동화 루프도 검토하고 있습니다.</p>
           </div>
           <div class="badges" style="margin-top:20px">
             <span class="badge">✉️ duo2208@gmail.com</span>
